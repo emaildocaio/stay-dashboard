@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stay Arraial — Dashboard de Gestão</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-hover: #242a33;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --ocean-500: #0EA5E9;
+            --ocean-400: #38BDF8;
+            --ocean-300: #7DD3FC;
+            --ocean-600: #0284C7;
+            --coral: #F97316;
+            --coral-light: #FB923C;
+            --green: #3FB950;
+            --green-dark: #238636;
+            --red: #F85149;
+            --yellow: #D29922;
+            --purple: #A371F7;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --sidebar-width: 240px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ─── Sidebar ─── */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .sidebar-logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+        .sidebar-logo .brand {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-logo .brand b { font-weight: 700; }
+        .sidebar-logo .brand span { font-weight: 300; opacity: 0.7; }
+        .sidebar-logo .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--ocean-500), var(--ocean-600));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .sidebar-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-muted);
+            padding: 16px 20px 8px;
+        }
+        .sidebar-nav { list-style: none; }
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.15s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-nav li a:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        .sidebar-nav li a.active {
+            color: var(--ocean-400);
+            background: rgba(14,165,233,0.08);
+            border-left-color: var(--ocean-500);
+        }
+        .sidebar-nav li a .icon {
+            width: 18px;
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .sidebar-nav li a .badge {
+            margin-left: auto;
+            background: var(--red);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+        .sidebar-nav li a .badge-info {
+            background: var(--ocean-600);
+        }
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            margin-top: 12px;
+        }
+        .sidebar-footer .user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-footer .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--ocean-500), var(--coral));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .sidebar-footer .user-info { font-size: 12px; }
+        .sidebar-footer .user-info .name { font-weight: 600; color: var(--text-primary); }
+        .sidebar-footer .user-info .role { color: var(--text-muted); font-size: 11px; }
+
+        /* ─── Main Content ─── */
+        .main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        /* ─── Top Bar ─── */
+        .topbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .topbar-left h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .topbar-left p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar-right .period-toggle {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .period-toggle button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 6px 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+        .period-toggle button.active {
+            background: var(--ocean-500);
+            color: #fff;
+        }
+        .period-toggle button:hover:not(.active) {
+            background: var(--bg-hover);
+        }
+        .topbar-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+        .topbar-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        /* ─── Content Area ─── */
+        .content {
+            padding: 24px 32px;
+        }
+
+        /* ─── KPI Cards ─── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            transition: border-color 0.2s;
+        }
+        .kpi-card:hover {
+            border-color: var(--ocean-500);
+        }
+        .kpi-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .kpi-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+        .kpi-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+        .kpi-change.up {
+            color: var(--green);
+            background: rgba(63,185,80,0.1);
+        }
+        .kpi-change.down {
+            color: var(--red);
+            background: rgba(248,81,73,0.1);
+        }
+        .kpi-change.neutral {
+            color: var(--yellow);
+            background: rgba(210,153,34,0.1);
+        }
+
+        /* ─── Chart Cards ─── */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+        .chart-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .chart-card .chart-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        .chart-container {
+            height: 220px;
+            position: relative;
+        }
+
+        /* ─── Data Tables / Lists ─── */
+        .tables-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+        .table-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .table-card h3 .view-all {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--ocean-400);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .table-card h3 .view-all:hover {
+            text-decoration: underline;
+        }
+
+        /* ─── Reservations Table ─── */
+        .reservations-list { list-style: none; }
+        .reservations-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .reservations-list li:last-child { border-bottom: none; }
+        .reservation-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .reservation-platform {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+        }
+        .platform-airbnb { background: #FF5A5F; }
+        .platform-booking { background: #003580; }
+        .platform-direct { background: var(--ocean-500); }
+        .reservation-details .guest-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .reservation-details .reservation-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .reservation-amount {
+            text-align: right;
+        }
+        .reservation-amount .amount {
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--green);
+        }
+        .reservation-amount .date {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ─── Status Tags ─── */
+        .status-tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .status-confirmed { background: rgba(63,185,80,0.15); color: var(--green); }
+        .status-pending { background: rgba(210,153,34,0.15); color: var(--yellow); }
+        .status-checkin { background: rgba(14,165,233,0.15); color: var(--ocean-400); }
+        .status-checkout { background: rgba(163,113,247,0.15); color: var(--purple); }
+
+        /* ─── Agents/System Status ─── */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .agent-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+        }
+        .agent-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .agent-name {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .agent-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-active { background: var(--green); box-shadow: 0 0 6px rgba(63,185,80,0.5); }
+        .dot-idle { background: var(--yellow); }
+        .dot-error { background: var(--red); box-shadow: 0 0 6px rgba(248,81,73,0.5); }
+        .agent-stat {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            padding: 4px 0;
+            color: var(--text-secondary);
+        }
+        .agent-stat .val {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ─── Section Header ─── */
+        .section-header {
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+        .section-header .section-icon {
+            color: var(--ocean-400);
+        }
+
+        /* ─── Quick Actions ─── */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .quick-action {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+        .quick-action:hover {
+            border-color: var(--ocean-500);
+            background: var(--bg-hover);
+            transform: translateY(-2px);
+        }
+        .quick-action .qa-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .quick-action .qa-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .quick-action .qa-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ─── Occupancy Bar ─── */
+        .occupancy-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .occupancy-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            text-align: center;
+        }
+        .occupancy-card .apt-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        .occupancy-ring {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            position: relative;
+        }
+        .occupancy-ring svg {
+            transform: rotate(-90deg);
+        }
+        .occupancy-ring .ring-bg {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 6;
+        }
+        .occupancy-ring .ring-fill {
+            fill: none;
+            stroke-width: 6;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+        .occupancy-ring .ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Outfit', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .occupancy-card .apt-status {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ─── Pipeline / Funnel ─── */
+        .funnel-row {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            align-items: stretch;
+        }
+        .funnel-step {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            position: relative;
+        }
+        .funnel-step .funnel-num {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--ocean-400);
+        }
+        .funnel-step .funnel-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .funnel-arrow {
+            display: flex;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        /* ─── Pending Actions ─── */
+        .pending-list { list-style: none; }
+        .pending-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .pending-item:last-child { border-bottom: none; }
+        .pending-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .pending-icon.urgent { background: rgba(248,81,73,0.15); color: var(--red); }
+        .pending-icon.warning { background: rgba(210,153,34,0.15); color: var(--yellow); }
+        .pending-icon.info { background: rgba(14,165,233,0.15); color: var(--ocean-400); }
+        .pending-text {
+            flex: 1;
+        }
+        .pending-text .pending-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .pending-text .pending-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .pending-action-btn {
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 5px 12px;
+            border-radius: var(--radius);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .pending-action-btn:hover {
+            background: var(--ocean-500);
+            color: #fff;
+            border-color: var(--ocean-500);
+        }
+
+        /* ─── AI Costs ─── */
+        .cost-bar {
+            display: flex;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: var(--border);
+            margin: 8px 0;
+        }
+        .cost-segment {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        /* ─── Scrollbar ─── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 1200px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .occupancy-grid { grid-template-columns: repeat(3, 1fr); }
+            .quick-actions { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            .charts-row { grid-template-columns: 1fr; }
+            .tables-row { grid-template-columns: 1fr; }
+            .agents-grid { grid-template-columns: 1fr; }
+            .occupancy-grid { grid-template-columns: repeat(2, 1fr); }
+            .content { padding: 16px; }
+        }
+
+        /* ─── Animations ─── */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .kpi-card, .chart-card, .table-card, .agent-card, .occupancy-card, .quick-action {
+            animation: fadeIn 0.4s ease forwards;
+        }
+        .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+        .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+        .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+        .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+
+        /* ─── Page Sections ─── */
+        .page-section {
+            display: none;
+        }
+        .page-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="brand">
+            <div class="brand-icon">S</div>
+            <div>
+                <b>Stay</b><span>Arraial</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar-label">Principal</div>
+    <ul class="sidebar-nav">
+        <li><a href="#" class="active" data-page="home"><span class="icon">&#9776;</span> Home</a></li>
+        <li><a href="#" data-page="reservas"><span class="icon">&#128197;</span> Reservas</a></li>
+        <li><a href="#" data-page="financeiro"><span class="icon">&#128176;</span> Financeiro</a></li>
+    </ul>
+
+    <div class="sidebar-label">Operacional</div>
+    <ul class="sidebar-nav">
+        <li><a href="#" data-page="mensagens"><span class="icon">&#9993;</span> Mensagens <span class="badge">3</span></a></li>
+        <li><a href="#" data-page="checkins"><span class="icon">&#128274;</span> Check-ins</a></li>
+        <li><a href="#" data-page="delegacao"><span class="icon">&#128101;</span> Delegação</a></li>
+    </ul>
+
+    <div class="sidebar-label">IA & Agentes</div>
+    <ul class="sidebar-nav">
+        <li><a href="#" data-page="agentes"><span class="icon">&#129302;</span> Agentes de IA</a></li>
+        <li><a href="#" data-page="shadow"><span class="icon">&#128065;</span> Shadow Review <span class="badge">5</span></a></li>
+        <li><a href="#" data-page="comercial"><span class="icon">&#128200;</span> Comercial / Leads</a></li>
+    </ul>
+
+    <div class="sidebar-label">Marketing</div>
+    <ul class="sidebar-nav">
+        <li><a href="#" data-page="marketing"><span class="icon">&#128247;</span> Conteúdo</a></li>
+        <li><a href="#" data-page="ads"><span class="icon">&#127919;</span> Tráfego Pago</a></li>
+        <li><a href="#" data-page="afiliados"><span class="icon">&#128279;</span> Afiliados EALM</a></li>
+    </ul>
+
+    <div class="sidebar-label">Ferramentas</div>
+    <ul class="sidebar-nav">
+        <li><a href="#" data-page="consultoria"><span class="icon">&#128218;</span> Consultoria</a></li>
+        <li><a href="#" data-page="juridico"><span class="icon">&#9878;</span> Jurídico</a></li>
+        <li><a href="#" data-page="midia"><span class="icon">&#127909;</span> Mídia Studio</a></li>
+        <li><a href="#" data-page="docs"><span class="icon">&#128196;</span> Documentação</a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <div class="user">
+            <div class="avatar">CF</div>
+            <div class="user-info">
+                <div class="name">Caio Farias</div>
+                <div class="role">Proprietário</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <h1>Bom dia, Caio</h1>
+            <p id="current-date"></p>
+        </div>
+        <div class="topbar-right">
+            <div class="period-toggle">
+                <button class="active" data-period="daily">Diário</button>
+                <button data-period="weekly">Semanal</button>
+                <button data-period="monthly">Mensal</button>
+            </div>
+            <button class="topbar-btn" id="btn-refresh">&#8635; Atualizar</button>
+        </div>
+    </header>
+
+    <!-- ═══════════ HOME PAGE ═══════════ -->
+    <div class="content">
+        <div class="page-section active" id="page-home">
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">&#128176; Receita do Mês</div>
+                    <div class="kpi-value">R$ 18.450</div>
+                    <div class="kpi-change up">&#9650; 12% vs mês anterior</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">&#128197; Reservas Ativas</div>
+                    <div class="kpi-value">14</div>
+                    <div class="kpi-change up">&#9650; 3 novas esta semana</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">&#127968; Taxa de Ocupação</div>
+                    <div class="kpi-value">72%</div>
+                    <div class="kpi-change neutral">&#9644; Meta: 80%</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">&#129302; Custo IA (mês)</div>
+                    <div class="kpi-value">R$ 47,30</div>
+                    <div class="kpi-change down">&#9660; Orçamento: R$ 80</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <h3>Receita Mensal</h3>
+                    <div class="chart-subtitle">Últimos 12 meses (R$)</div>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Reservas por Plataforma</h3>
+                    <div class="chart-subtitle">Últimos 12 meses</div>
+                    <div class="chart-container">
+                        <canvas id="bookingsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Occupancy by Apartment -->
+            <div class="section-header">
+                <span class="section-icon">&#127968;</span> Ocupação por Apartamento — Março 2026
+            </div>
+            <div class="occupancy-grid">
+                <div class="occupancy-card">
+                    <div class="apt-name">Apt 1 — Praia</div>
+                    <div class="occupancy-ring">
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                            <circle class="ring-bg" cx="40" cy="40" r="34"/>
+                            <circle class="ring-fill" cx="40" cy="40" r="34"
+                                stroke="var(--green)"
+                                stroke-dasharray="213.6"
+                                stroke-dashoffset="42.7"/>
+                        </svg>
+                        <span class="ring-text" style="color:var(--green)">80%</span>
+                    </div>
+                    <div class="apt-status">25 noites ocupadas</div>
+                </div>
+                <div class="occupancy-card">
+                    <div class="apt-name">Apt 2 — Forno</div>
+                    <div class="occupancy-ring">
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                            <circle class="ring-bg" cx="40" cy="40" r="34"/>
+                            <circle class="ring-fill" cx="40" cy="40" r="34"
+                                stroke="var(--ocean-400)"
+                                stroke-dasharray="213.6"
+                                stroke-dashoffset="64"/>
+                        </svg>
+                        <span class="ring-text" style="color:var(--ocean-400)">70%</span>
+                    </div>
+                    <div class="apt-status">22 noites ocupadas</div>
+                </div>
+                <div class="occupancy-card">
+                    <div class="apt-name">Apt 3 — Pontal</div>
+                    <div class="occupancy-ring">
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                            <circle class="ring-bg" cx="40" cy="40" r="34"/>
+                            <circle class="ring-fill" cx="40" cy="40" r="34"
+                                stroke="var(--yellow)"
+                                stroke-dasharray="213.6"
+                                stroke-dashoffset="107"/>
+                        </svg>
+                        <span class="ring-text" style="color:var(--yellow)">50%</span>
+                    </div>
+                    <div class="apt-status">16 noites ocupadas</div>
+                </div>
+                <div class="occupancy-card">
+                    <div class="apt-name">Apt 4 — Prainha</div>
+                    <div class="occupancy-ring">
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                            <circle class="ring-bg" cx="40" cy="40" r="34"/>
+                            <circle class="ring-fill" cx="40" cy="40" r="34"
+                                stroke="var(--green)"
+                                stroke-dasharray="213.6"
+                                stroke-dashoffset="21.4"/>
+                        </svg>
+                        <span class="ring-text" style="color:var(--green)">90%</span>
+                    </div>
+                    <div class="apt-status">28 noites ocupadas</div>
+                </div>
+                <div class="occupancy-card">
+                    <div class="apt-name">Apt 5 — Anjos</div>
+                    <div class="occupancy-ring">
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                            <circle class="ring-bg" cx="40" cy="40" r="34"/>
+                            <circle class="ring-fill" cx="40" cy="40" r="34"
+                                stroke="var(--ocean-400)"
+                                stroke-dasharray="213.6"
+                                stroke-dashoffset="85.4"/>
+                        </svg>
+                        <span class="ring-text" style="color:var(--ocean-400)">60%</span>
+                    </div>
+                    <div class="apt-status">19 noites ocupadas</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="section-header">
+                <span class="section-icon">&#9889;</span> Ações Rápidas
+            </div>
+            <div class="quick-actions">
+                <a class="quick-action" data-page="reservas">
+                    <div class="qa-icon">&#128197;</div>
+                    <div class="qa-label">Nova Reserva</div>
+                    <div class="qa-desc">Registrar manualmente</div>
+                </a>
+                <a class="quick-action" data-page="shadow">
+                    <div class="qa-icon">&#128065;</div>
+                    <div class="qa-label">Shadow Review</div>
+                    <div class="qa-desc">5 respostas pendentes</div>
+                </a>
+                <a class="quick-action" data-page="marketing">
+                    <div class="qa-icon">&#128247;</div>
+                    <div class="qa-label">Criar Conteúdo</div>
+                    <div class="qa-desc">Post, Story, Reels</div>
+                </a>
+                <a class="quick-action" data-page="ads">
+                    <div class="qa-icon">&#127919;</div>
+                    <div class="qa-label">Campanhas Ads</div>
+                    <div class="qa-desc">Google Ads + PriceLabs</div>
+                </a>
+            </div>
+
+            <!-- Tables Row: Recent Reservations + Pending Actions -->
+            <div class="tables-row">
+                <div class="table-card">
+                    <h3>
+                        Últimas Reservas
+                        <a class="view-all" data-page="reservas">Ver todas &#8594;</a>
+                    </h3>
+                    <ul class="reservations-list">
+                        <li>
+                            <div class="reservation-info">
+                                <div class="reservation-platform platform-airbnb">A</div>
+                                <div class="reservation-details">
+                                    <div class="guest-name">Maria Silva</div>
+                                    <div class="reservation-meta">Apt 4 — 22/03 a 26/03 &middot; <span class="status-tag status-checkin">Check-in hoje</span></div>
+                                </div>
+                            </div>
+                            <div class="reservation-amount">
+                                <div class="amount">R$ 2.400</div>
+                                <div class="date">4 noites</div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="reservation-info">
+                                <div class="reservation-platform platform-booking">B</div>
+                                <div class="reservation-details">
+                                    <div class="guest-name">João Mendes</div>
+                                    <div class="reservation-meta">Apt 1 — 24/03 a 28/03 &middot; <span class="status-tag status-confirmed">Confirmada</span></div>
+                                </div>
+                            </div>
+                            <div class="reservation-amount">
+                                <div class="amount">R$ 1.800</div>
+                                <div class="date">4 noites</div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="reservation-info">
+                                <div class="reservation-platform platform-airbnb">A</div>
+                                <div class="reservation-details">
+                                    <div class="guest-name">Ana Costa</div>
+                                    <div class="reservation-meta">Apt 2 — 25/03 a 30/03 &middot; <span class="status-tag status-confirmed">Confirmada</span></div>
+                                </div>
+                            </div>
+                            <div class="reservation-amount">
+                                <div class="amount">R$ 3.200</div>
+                                <div class="date">5 noites</div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="reservation-info">
+                                <div class="reservation-platform platform-direct">S</div>
+                                <div class="reservation-details">
+                                    <div class="guest-name">Pedro Rocha</div>
+                                    <div class="reservation-meta">Apt 5 — 28/03 a 01/04 &middot; <span class="status-tag status-pending">Pendente</span></div>
+                                </div>
+                            </div>
+                            <div class="reservation-amount">
+                                <div class="amount">R$ 2.100</div>
+                                <div class="date">4 noites</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="table-card">
+                    <h3>
+                        Ações Pendentes
+                        <span style="font-size:12px; font-weight:500; color:var(--red);">4 itens</span>
+                    </h3>
+                    <ul class="pending-list">
+                        <li class="pending-item">
+                            <div class="pending-icon urgent">!</div>
+                            <div class="pending-text">
+                                <div class="pending-title">Definir senha — Apt 4</div>
+                                <div class="pending-meta">Check-in Maria Silva hoje 14h</div>
+                            </div>
+                            <button class="pending-action-btn">Definir</button>
+                        </li>
+                        <li class="pending-item">
+                            <div class="pending-icon warning">&#9888;</div>
+                            <div class="pending-text">
+                                <div class="pending-title">5 shadow reviews pendentes</div>
+                                <div class="pending-meta">Respostas do agente para revisar</div>
+                            </div>
+                            <button class="pending-action-btn">Revisar</button>
+                        </li>
+                        <li class="pending-item">
+                            <div class="pending-icon info">&#9993;</div>
+                            <div class="pending-text">
+                                <div class="pending-title">3 leads sem resposta</div>
+                                <div class="pending-meta">Perfil: casais (2), família (1)</div>
+                            </div>
+                            <button class="pending-action-btn">Ver</button>
+                        </li>
+                        <li class="pending-item">
+                            <div class="pending-icon warning">&#9888;</div>
+                            <div class="pending-text">
+                                <div class="pending-title">Checkout amanhã — Apt 3</div>
+                                <div class="pending-meta">Lucas Santos, checkout 23/03 11h</div>
+                            </div>
+                            <button class="pending-action-btn">Mensagem</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Agents Status -->
+            <div class="section-header">
+                <span class="section-icon">&#129302;</span> Status dos Agentes de IA
+            </div>
+            <div class="agents-grid">
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-name">
+                            <span class="agent-status-dot dot-active"></span>
+                            agent-auto-responder
+                        </div>
+                    </div>
+                    <div class="agent-stat"><span>Respostas hoje</span><span class="val">12</span></div>
+                    <div class="agent-stat"><span>Taxa aprovação</span><span class="val" style="color:var(--green)">87%</span></div>
+                    <div class="agent-stat"><span>Custo 24h</span><span class="val">R$ 2,40</span></div>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-name">
+                            <span class="agent-status-dot dot-active"></span>
+                            agent-commercial
+                        </div>
+                    </div>
+                    <div class="agent-stat"><span>Leads processados</span><span class="val">8</span></div>
+                    <div class="agent-stat"><span>Conversões</span><span class="val" style="color:var(--green)">3</span></div>
+                    <div class="agent-stat"><span>Custo 24h</span><span class="val">R$ 1,80</span></div>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-name">
+                            <span class="agent-status-dot dot-active"></span>
+                            agent-auto-sync
+                        </div>
+                    </div>
+                    <div class="agent-stat"><span>Syncs hoje</span><span class="val">47</span></div>
+                    <div class="agent-stat"><span>Erros</span><span class="val" style="color:var(--green)">0</span></div>
+                    <div class="agent-stat"><span>Custo 24h</span><span class="val">R$ 0,90</span></div>
+                </div>
+            </div>
+
+            <!-- Funnel -->
+            <div class="section-header">
+                <span class="section-icon">&#128200;</span> Funil Comercial — Março 2026
+            </div>
+            <div class="funnel-row">
+                <div class="funnel-step">
+                    <div class="funnel-num">156</div>
+                    <div class="funnel-label">Mensagens Recebidas</div>
+                </div>
+                <div class="funnel-arrow">&#8594;</div>
+                <div class="funnel-step">
+                    <div class="funnel-num">42</div>
+                    <div class="funnel-label">Leads Qualificados</div>
+                </div>
+                <div class="funnel-arrow">&#8594;</div>
+                <div class="funnel-step">
+                    <div class="funnel-num">28</div>
+                    <div class="funnel-label">Propostas Enviadas</div>
+                </div>
+                <div class="funnel-arrow">&#8594;</div>
+                <div class="funnel-step">
+                    <div class="funnel-num" style="color:var(--green)">14</div>
+                    <div class="funnel-label">Reservas Confirmadas</div>
+                </div>
+            </div>
+
+            <!-- AI Cost Breakdown -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <h3>Custos de IA por Agente</h3>
+                    <div class="chart-subtitle">Março 2026</div>
+                    <div class="chart-container">
+                        <canvas id="costsChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Taxa de Ocupação (12 meses)</h3>
+                    <div class="chart-subtitle">Média dos 5 apartamentos</div>
+                    <div class="chart-container">
+                        <canvas id="occupancyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /page-home -->
+
+        <!-- ═══════════ PLACEHOLDER PAGES ═══════════ -->
+        <div class="page-section" id="page-reservas">
+            <div class="section-header"><span class="section-icon">&#128197;</span> Gestão de Reservas</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Módulo de Reservas</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Calendário de reservas, histórico completo, integração Booking + Airbnb.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-operacional</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-financeiro">
+            <div class="section-header"><span class="section-icon">&#128176;</span> Conciliação Financeira — Airbnb + Booking</div>
+
+            <!-- Filters -->
+            <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <label style="font-size:12px;color:var(--text-muted);">De:</label>
+                    <input type="date" id="fin-date-from" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);padding:6px 10px;border-radius:var(--radius);font-size:12px;font-family:Inter,sans-serif;">
+                    <label style="font-size:12px;color:var(--text-muted);">Até:</label>
+                    <input type="date" id="fin-date-to" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);padding:6px 10px;border-radius:var(--radius);font-size:12px;font-family:Inter,sans-serif;">
+                </div>
+                <div id="fin-canal-group" style="display:flex;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
+                    <button class="fin-canal-btn active" data-canal="todos">Todos</button>
+                    <button class="fin-canal-btn" data-canal="airbnb">Airbnb</button>
+                    <button class="fin-canal-btn" data-canal="booking">Booking</button>
+                </div>
+                <div id="fin-status-group" style="display:flex;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
+                    <button class="fin-status-btn active" data-status="todos">Todos</button>
+                    <button class="fin-status-btn" data-status="conciliado">&#10003; Conciliados</button>
+                    <button class="fin-status-btn" data-status="pendente">&#9203; Pendentes</button>
+                </div>
+                <button id="fin-refresh" style="background:var(--bg-card);border:1px solid var(--border);color:var(--ocean-400);padding:6px 14px;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;margin-left:auto;">&#8635; Atualizar</button>
+                <span id="fin-last-update" style="font-size:11px;color:var(--text-muted);"></span>
+            </div>
+
+            <style>
+                .fin-canal-btn,.fin-status-btn{background:none;color:var(--text-secondary);border:none;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;}
+                .fin-canal-btn.active,.fin-status-btn.active{background:var(--ocean-500);color:#fff;}
+                .fin-canal-btn:hover:not(.active),.fin-status-btn:hover:not(.active){background:var(--bg-hover);}
+            </style>
+
+            <!-- KPIs -->
+            <div class="kpi-grid" id="fin-kpis">
+                <div class="kpi-card">
+                    <div class="kpi-label">&#128203; Total de Reservas</div>
+                    <div class="kpi-value" id="fin-kpi-total">—</div>
+                    <div id="fin-kpi-total-sub" style="font-size:12px;color:var(--text-muted);margin-top:6px;"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">&#10003; Conciliadas</div>
+                    <div class="kpi-value" id="fin-kpi-conc" style="color:var(--green);">—</div>
+                    <div id="fin-kpi-conc-sub" style="font-size:12px;color:var(--text-muted);margin-top:6px;"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">&#9203; Pendentes</div>
+                    <div class="kpi-value" id="fin-kpi-pend" style="color:var(--yellow);">—</div>
+                    <div id="fin-kpi-pend-sub" style="font-size:12px;color:var(--text-muted);margin-top:6px;"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">&#128293; Total Recebido</div>
+                    <div class="kpi-value" id="fin-kpi-recebido" style="color:var(--ocean-400);">—</div>
+                    <div id="fin-kpi-recebido-sub" style="font-size:12px;color:var(--text-muted);margin-top:6px;">Pix (Airbnb + Booking)</div>
+                </div>
+            </div>
+
+            <!-- Cota Co-Anfitrião -->
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:14px;">&#129309;</span>
+                    <span style="font-size:13px;font-weight:600;color:var(--coral);">Repasse Co-anfitrião — Booking (17%)</span>
+                </div>
+                <div style="text-align:center;"><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Já Transferido</div><div id="fin-cota-transferido" style="font-family:Outfit,sans-serif;font-size:16px;font-weight:700;color:var(--green);">—</div></div>
+                <div style="text-align:center;"><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Pendente</div><div id="fin-cota-pendente" style="font-family:Outfit,sans-serif;font-size:16px;font-weight:700;color:var(--yellow);">—</div></div>
+                <div style="text-align:center;"><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Futuro</div><div id="fin-cota-futuro" style="font-family:Outfit,sans-serif;font-size:16px;font-weight:700;color:var(--text-secondary);">—</div></div>
+                <div style="margin-left:auto;font-size:11px;color:var(--text-muted);">&#9432; Airbnb repassa automaticamente</div>
+            </div>
+
+            <!-- Table -->
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+                <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                    <h3 style="font-family:Outfit,sans-serif;font-size:15px;font-weight:600;">Registro de Conciliações</h3>
+                    <span id="fin-table-count" style="font-size:12px;color:var(--text-muted);"></span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead>
+                            <tr style="background:var(--bg-secondary);">
+                                <th class="fth">Canal</th><th class="fth">Reserva</th><th class="fth">Hóspede</th><th class="fth">Imóvel</th><th class="fth">Check-in</th><th class="fth">Check-out</th><th class="fth" style="text-align:right;">Total Bruto</th><th class="fth" style="text-align:right;">Comissão</th><th class="fth" style="text-align:right;">Cota Co-host</th><th class="fth" style="text-align:right;">Esperado</th><th class="fth" style="text-align:right;">Recebido</th><th class="fth" style="text-align:right;">Diferença</th><th class="fth" style="text-align:center;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fin-table-body">
+                            <tr><td colspan="13" style="padding:40px;text-align:center;color:var(--text-muted);">Carregando dados...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <style>.fth{padding:10px 12px;text-align:left;color:var(--text-muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}</style>
+        </div>
+
+        <div class="page-section" id="page-mensagens">
+            <div class="section-header"><span class="section-icon">&#9993;</span> Central de Mensagens</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Régua de Mensagens</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Fila de mensagens automáticas, régua de comunicação, templates.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-operacional</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-checkins">
+            <div class="section-header"><span class="section-icon">&#128274;</span> Check-ins & Check-outs</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Gestão de Acessos</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Senhas de fechadura, horários, instruções de acesso.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-operacional</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-delegacao">
+            <div class="section-header"><span class="section-icon">&#128101;</span> Delegação de Tarefas</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Cards para o Time</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Cards de nova reserva, tarefas de limpeza, manutenção, WhatsApp.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/delegador</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-agentes">
+            <div class="section-header"><span class="section-icon">&#129302;</span> Agentes de IA</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Monitoramento de Agentes</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Status, custos, performance, logs de cada agente do sistema.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-dashboard</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-shadow">
+            <div class="section-header"><span class="section-icon">&#128065;</span> Shadow Review</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Revisão de Respostas IA</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Aprovar ou rejeitar respostas geradas pelos agentes. Feedback loop.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-dashboard</b> (Shadow Review API)</p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-comercial">
+            <div class="section-header"><span class="section-icon">&#128200;</span> Comercial & Leads</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Pipeline de Vendas</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Funil, leads, conversão, ROI dos agentes, simulações comerciais.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-comercial</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-marketing">
+            <div class="section-header"><span class="section-icon">&#128247;</span> Marketing & Conteúdo</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Criação de Conteúdo</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Posts Instagram, Reels, TikTok, calendário editorial, campanhas sazonais.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-marketing</b> + <b>/stay-media-studio</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-ads">
+            <div class="section-header"><span class="section-icon">&#127919;</span> Tráfego Pago</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Google Ads + PriceLabs</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Campanhas metodologia Sobral, preço dinâmico, ROAS, CTR, CPA.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-subido-ads</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-afiliados">
+            <div class="section-header"><span class="section-icon">&#128279;</span> Afiliados — Em Algum Lugar do Mundo</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Stay22 + Blog EALM</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Comissões, cliques, reservas via Stay22, performance dos posts.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/ealm-affiliate-ads</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-consultoria">
+            <div class="section-header"><span class="section-icon">&#128218;</span> Consultoria de Negócio</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Análise & Estratégia</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Relatórios trimestrais, planos de ação, análise de precificação, benchmark.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-consultor</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-juridico">
+            <div class="section-header"><span class="section-icon">&#9878;</span> Jurídico</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Consultoria Jurídica</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Contratos, Lei 8.245, tributação MEI/PJ, CADASTUR, compliance.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-juridico</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-midia">
+            <div class="section-header"><span class="section-icon">&#127909;</span> Mídia Studio</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Acervo & Edição</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Fotos e vídeos reais de Arraial, catálogo, edição, composições de marketing.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-media-studio</b></p>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-docs">
+            <div class="section-header"><span class="section-icon">&#128196;</span> Documentação</div>
+            <div class="chart-card" style="padding:40px; text-align:center;">
+                <h3 style="color:var(--text-secondary); font-size:18px;">Specs & Documentação Técnica</h3>
+                <p style="color:var(--text-muted); margin-top:8px;">Especificações de cada fluxo, arquitetura, Edge Functions, APIs.</p>
+                <p style="color:var(--ocean-400); margin-top:16px; font-size:13px;">Conectar com: <b>/stay-doc-spec</b></p>
+            </div>
+        </div>
+
+    </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ─── Date ───
+const dateEl = document.getElementById('current-date');
+const now = new Date();
+const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+dateEl.textContent = now.toLocaleDateString('pt-BR', options);
+
+// ─── Period Toggle ───
+document.querySelectorAll('.period-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.period-toggle button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    });
+});
+
+// ─── Sidebar Navigation ───
+document.querySelectorAll('.sidebar-nav a, .quick-action[data-page], .view-all[data-page]').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = link.getAttribute('data-page');
+        if (!page) return;
+
+        // Update sidebar active state
+        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+        const sidebarLink = document.querySelector(`.sidebar-nav a[data-page="${page}"]`);
+        if (sidebarLink) sidebarLink.classList.add('active');
+
+        // Show page
+        document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById('page-' + page);
+        if (target) target.classList.add('active');
+    });
+});
+
+// ─── Chart.js Global Config ───
+Chart.defaults.color = '#8b949e';
+Chart.defaults.borderColor = '#30363d';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+// ─── Revenue Chart ───
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+        labels: ['Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
+        datasets: [{
+            label: 'Receita (R$)',
+            data: [14200, 16800, 12400, 22500, 15300, 11800, 13600, 14900, 28500, 19200, 21000, 18450],
+            borderColor: '#0EA5E9',
+            backgroundColor: 'rgba(14,165,233,0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: {
+                ticks: {
+                    callback: v => 'R$ ' + (v/1000).toFixed(0) + 'k'
+                },
+                grid: { color: 'rgba(48,54,61,0.5)' }
+            },
+            x: { grid: { display: false } }
+        }
+    }
+});
+
+// ─── Bookings Chart ───
+const bookingsCtx = document.getElementById('bookingsChart').getContext('2d');
+new Chart(bookingsCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
+        datasets: [
+            {
+                label: 'Airbnb',
+                data: [8, 10, 7, 14, 9, 6, 8, 9, 18, 12, 13, 9],
+                backgroundColor: '#FF5A5F',
+                borderRadius: 4,
+                barPercentage: 0.7
+            },
+            {
+                label: 'Booking',
+                data: [5, 6, 4, 8, 5, 4, 5, 6, 10, 7, 8, 4],
+                backgroundColor: '#003580',
+                borderRadius: 4,
+                barPercentage: 0.7
+            },
+            {
+                label: 'Direto',
+                data: [1, 2, 1, 2, 1, 1, 1, 1, 3, 2, 1, 1],
+                backgroundColor: '#0EA5E9',
+                borderRadius: 4,
+                barPercentage: 0.7
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { boxWidth: 12, padding: 16, font: { size: 11 } }
+            }
+        },
+        scales: {
+            y: {
+                stacked: true,
+                grid: { color: 'rgba(48,54,61,0.5)' }
+            },
+            x: {
+                stacked: true,
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+// ─── AI Costs Chart ───
+const costsCtx = document.getElementById('costsChart').getContext('2d');
+new Chart(costsCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Auto-Responder', 'Comercial', 'Auto-Sync', 'Chat RAG', 'Outros'],
+        datasets: [{
+            data: [18.5, 12.3, 7.2, 6.1, 3.2],
+            backgroundColor: ['#0EA5E9', '#F97316', '#3FB950', '#A371F7', '#8b949e'],
+            borderColor: '#1c2128',
+            borderWidth: 3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    boxWidth: 12,
+                    padding: 12,
+                    font: { size: 11 },
+                    generateLabels: function(chart) {
+                        const data = chart.data;
+                        return data.labels.map((label, i) => ({
+                            text: `${label}: R$ ${data.datasets[0].data[i].toFixed(2)}`,
+                            fillStyle: data.datasets[0].backgroundColor[i],
+                            strokeStyle: data.datasets[0].backgroundColor[i],
+                            lineWidth: 0,
+                            index: i
+                        }));
+                    }
+                }
+            }
+        },
+        cutout: '65%'
+    }
+});
+
+// ─── Occupancy Chart ───
+const occCtx = document.getElementById('occupancyChart').getContext('2d');
+new Chart(occCtx, {
+    type: 'line',
+    data: {
+        labels: ['Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
+        datasets: [{
+            label: 'Ocupação (%)',
+            data: [65, 70, 55, 85, 60, 50, 58, 62, 95, 78, 75, 72],
+            borderColor: '#F97316',
+            backgroundColor: 'rgba(249,115,22,0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            borderWidth: 2
+        }, {
+            label: 'Meta',
+            data: [80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80],
+            borderColor: 'rgba(139,148,158,0.4)',
+            borderDash: [6, 4],
+            borderWidth: 1,
+            pointRadius: 0,
+            fill: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { boxWidth: 12, padding: 16, font: { size: 11 } }
+            }
+        },
+        scales: {
+            y: {
+                min: 0,
+                max: 100,
+                ticks: { callback: v => v + '%' },
+                grid: { color: 'rgba(48,54,61,0.5)' }
+            },
+            x: { grid: { display: false } }
+        }
+    }
+});
+
+// ─── Refresh button ───
+document.getElementById('btn-refresh').addEventListener('click', () => {
+    document.getElementById('btn-refresh').innerHTML = '&#8635; Atualizando...';
+    setTimeout(() => {
+        document.getElementById('btn-refresh').innerHTML = '&#8635; Atualizar';
+    }, 1500);
+});
+</script>
+
+<script>
+
+// ─── Financeiro — Conciliação ───
+(function() {
+    const SB_URL = 'https://zoqrmshnysdfxhcoulql.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcXJtc2hueXNkZnhoY291bHFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMDQyMjMsImV4cCI6MjA4ODU4MDIyM30.NQqvqxEEb3sz3Qx7RT_CGloFcvwhWuWI3NCsgZ-ZHFY';
+    let allData=[], filteredData=[];
+    const fmt=v=>v!=null?'R$ '+parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+    const fmtD=d=>d?d.split('-').reverse().join('/'):'—';
+
+    async function fetchData(){
+        try{
+            const r=await fetch(SB_URL+'/rest/v1/conciliacao_reservas?select=*&order=checkin.desc',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+            if(!r.ok)throw new Error('HTTP '+r.status);
+            allData=await r.json();
+            applyFilters();
+            document.getElementById('fin-last-update').textContent='Atualizado: '+new Date().toLocaleTimeString('pt-BR');
+        }catch(e){
+            document.getElementById('fin-table-body').innerHTML='<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--red);">Erro: '+e.message+'</td></tr>';
+        }
+    }
+
+    function applyFilters(){
+        const from=document.getElementById('fin-date-from').value;
+        const to=document.getElementById('fin-date-to').value;
+        const canal=document.querySelector('.fin-canal-btn.active')?.dataset.canal||'todos';
+        const status=document.querySelector('.fin-status-btn.active')?.dataset.status||'todos';
+        filteredData=allData.filter(r=>{
+            if(from&&r.checkin<from)return false;
+            if(to&&r.checkout>to)return false;
+            if(canal!=='todos'&&r.canal!==canal)return false;
+            if(status!=='todos'&&r.status!==status)return false;
+            return true;
+        });
+        renderKPIs();renderCota();renderTable();
+    }
+
+    function renderKPIs(){
+        const t=filteredData.length;
+        const c=filteredData.filter(r=>r.status==='conciliado');
+        const p=filteredData.filter(r=>r.status==='pendente');
+        const rec=c.reduce((s,r)=>s+parseFloat(r.valor_pix_recebido||0),0);
+        const ab=filteredData.filter(r=>r.canal==='airbnb').length;
+        const bk=filteredData.filter(r=>r.canal==='booking').length;
+        const pct=t>0?Math.round(c.length/t*100):0;
+        document.getElementById('fin-kpi-total').textContent=t;
+        document.getElementById('fin-kpi-total-sub').textContent=ab+' Airbnb · '+bk+' Booking';
+        document.getElementById('fin-kpi-conc').textContent=c.length;
+        document.getElementById('fin-kpi-conc-sub').textContent=pct+'% do total';
+        document.getElementById('fin-kpi-pend').textContent=p.length;
+        document.getElementById('fin-kpi-pend-sub').textContent='Aguardando repasse';
+        document.getElementById('fin-kpi-recebido').textContent=fmt(rec);
+    }
+
+    function renderCota(){
+        const bk=filteredData.filter(r=>r.canal==='booking');
+        const tr=bk.filter(r=>r.cota_status==='conciliado'&&r.cota_valor_pix).reduce((s,r)=>s+parseFloat(r.cota_valor_pix||0),0);
+        const pn=bk.filter(r=>r.cota_status==='pendente'&&r.status==='conciliado').reduce((s,r)=>{const v=parseFloat(r.valor_liquido_esperado||0);return s+Math.max(0,(v-250)*0.17);},0);
+        const ft=bk.filter(r=>r.cota_status==='pendente'&&r.status==='pendente').reduce((s,r)=>{const t=parseFloat(r.valor_total_hospede||0);const c=parseFloat(r.comissao_plataforma||0);const v=parseFloat(r.valor_liquido_esperado||0)||(t-c);return s+Math.max(0,(v-250)*0.17);},0);
+        document.getElementById('fin-cota-transferido').textContent=fmt(tr);
+        document.getElementById('fin-cota-pendente').textContent=fmt(pn);
+        document.getElementById('fin-cota-futuro').textContent=fmt(ft);
+    }
+
+    function renderTable(){
+        const tb=document.getElementById('fin-table-body');
+        document.getElementById('fin-table-count').textContent=filteredData.length+' registros';
+        if(!filteredData.length){tb.innerHTML='<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--text-muted);">Nenhuma reserva</td></tr>';return;}
+        const rs='padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;';
+        tb.innerHTML=filteredData.map(r=>{
+            const isA=r.canal==='airbnb';
+            const cb=isA?'<span style="background:#FF5A5F;color:#fff;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">Airbnb</span>':'<span style="background:#003580;color:#fff;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">Booking</span>';
+            const com=r.comissao_plataforma?'<span style="color:var(--red);">- '+fmt(r.comissao_plataforma)+'</span>':'<span style="color:var(--text-muted);">—</span>';
+            let ct='';
+            if(isA)ct='<span style="color:var(--text-muted);font-size:11px;">&#9989; auto</span>';
+            else if(r.cota_status==='conciliado')ct='<span style="color:var(--green);">'+fmt(r.cota_valor_pix||r.cota_coanfitriao)+'</span>';
+            else if(r.status==='conciliado'){const v=parseFloat(r.valor_liquido_esperado||0);ct='<span style="color:var(--yellow);">'+fmt(((v-250)*0.17).toFixed(2))+' futuro</span>';}
+            else ct='<span style="color:var(--text-muted);">Aguardando</span>';
+            const rc=r.valor_pix_recebido?fmt(r.valor_pix_recebido):'—';
+            const es=r.valor_liquido_esperado?fmt(r.valor_liquido_esperado):'—';
+            let df='—';
+            if(r.diferenca!=null){const d=parseFloat(r.diferenca);const dc=d===0?'var(--green)':d>0?'var(--ocean-400)':'var(--red)';df='<span style="color:'+dc+';">'+(d>=0?'✓':'!')+' '+fmt(Math.abs(d))+'</span>';}
+            const sb=r.status==='conciliado'?'<span style="background:rgba(63,185,80,.15);color:var(--green);padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">&#10003; Conciliado</span>':'<span style="background:rgba(210,153,34,.15);color:var(--yellow);padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">&#9203; Pendente</span>';
+            return '<tr style="transition:background .1s;" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'"><td style="'+rs+'">'+cb+'</td><td style="'+rs+'font-weight:600;color:var(--ocean-400);">'+r.codigo_reserva+'</td><td style="'+rs+'">'+(r.hospede||'—')+'</td><td style="'+rs+'color:var(--text-secondary);font-size:11px;">'+(r.apartamento||'—')+'</td><td style="'+rs+'">'+fmtD(r.checkin)+'</td><td style="'+rs+'">'+fmtD(r.checkout)+'</td><td style="'+rs+'text-align:right;font-weight:600;">'+fmt(r.valor_total_hospede)+'</td><td style="'+rs+'text-align:right;">'+com+'</td><td style="'+rs+'text-align:right;">'+ct+'</td><td style="'+rs+'text-align:right;">'+es+'</td><td style="'+rs+'text-align:right;font-weight:600;color:var(--green);">'+rc+'</td><td style="'+rs+'text-align:right;">'+df+'</td><td style="'+rs+'text-align:center;">'+sb+'</td></tr>';
+        }).join('');
+    }
+
+    function setupBtns(sel,fn){document.querySelectorAll(sel).forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll(sel).forEach(x=>x.classList.remove('active'));b.classList.add('active');fn();});});}
+    setupBtns('.fin-canal-btn',applyFilters);
+    setupBtns('.fin-status-btn',applyFilters);
+    document.getElementById('fin-date-from').addEventListener('change',applyFilters);
+    document.getElementById('fin-date-to').addEventListener('change',applyFilters);
+    document.getElementById('fin-refresh').addEventListener('click',fetchData);
+
+    const now=new Date(),ago=new Date(now);ago.setMonth(ago.getMonth()-3);
+    document.getElementById('fin-date-from').value=ago.toISOString().split('T')[0];
+    document.getElementById('fin-date-to').value=now.toISOString().split('T')[0];
+
+    const fl=document.querySelector('[data-page="financeiro"]');
+    if(fl)fl.addEventListener('click',()=>{if(!allData.length)fetchData();});
+    const obs=new MutationObserver(()=>{const el=document.getElementById('page-financeiro');if(el&&el.classList.contains('active')&&!allData.length)fetchData();});
+    obs.observe(document.getElementById('page-financeiro'),{attributes:true,attributeFilter:['class']});
+})();
+</script>
+
+</body>
+</html>
