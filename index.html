@@ -1152,6 +1152,15 @@
         </div>
 
         <div class="page-section" id="page-financeiro">
+
+            <!-- Tab Navigation Financeiro -->
+            <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--border);">
+                <button class="fin-tab active" data-tab="conciliacao" style="background:none;border:none;padding:12px 24px;font-size:14px;font-weight:600;color:var(--ocean-400);cursor:pointer;border-bottom:2px solid var(--ocean-500);margin-bottom:-2px;transition:all .2s;font-family:Outfit,sans-serif;">💰 Conciliação</button>
+                <button class="fin-tab" data-tab="documentos" style="background:none;border:none;padding:12px 24px;font-size:14px;font-weight:600;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;font-family:Outfit,sans-serif;">📄 Documentos & NFs</button>
+            </div>
+
+            <!-- TAB 1: Conciliação -->
+            <div class="fin-tab-content active" id="tab-conciliacao">
             <div class="section-header"><span class="section-icon">&#128176;</span> Conciliação Financeira — Airbnb + Booking</div>
 
             <!-- Filters -->
@@ -1238,6 +1247,76 @@
                 </div>
             </div>
             <style>.fth{padding:10px 12px;text-align:left;color:var(--text-muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}</style>
+            </div><!-- /tab-conciliacao -->
+
+            <!-- TAB 2: DOCUMENTOS & NFs -->
+            <div class="fin-tab-content" id="tab-documentos" style="display:none;">
+                <div class="section-header"><span class="section-icon">&#128196;</span> Documentos & NFs — Stay Arraial</div>
+
+                <!-- Status Email Mensal -->
+                <div id="doc-email-status" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:20px;">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                        <span style="font-size:20px;">📧</span>
+                        <div>
+                            <h3 style="font-family:Outfit,sans-serif;font-size:15px;font-weight:600;">Email Mensal — Contador Christiano</h3>
+                            <p id="doc-email-mes-ref" style="font-size:12px;color:var(--text-muted);">Carregando...</p>
+                        </div>
+                        <div id="doc-email-badge" style="margin-left:auto;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;">Verificando...</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                        <div style="background:var(--bg-secondary);border-radius:var(--radius);padding:12px;"><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Dia de Envio</div><div id="doc-email-dia" style="font-family:Outfit,sans-serif;font-size:16px;font-weight:700;margin-top:4px;">—</div></div>
+                        <div style="background:var(--bg-secondary);border-radius:var(--radius);padding:12px;"><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Status Email</div><div id="doc-email-enviado" style="font-family:Outfit,sans-serif;font-size:16px;font-weight:700;margin-top:4px;">—</div></div>
+                        <div style="background:var(--bg-secondary);border-radius:var(--radius);padding:12px;"><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">NFs Limpeza</div><div id="doc-email-limpeza" style="font-family:Outfit,sans-serif;font-size:16px;font-weight:700;margin-top:4px;">—</div></div>
+                        <div style="background:var(--bg-secondary);border-radius:var(--radius);padding:12px;"><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">NFs Lavagem</div><div id="doc-email-lavagem" style="font-family:Outfit,sans-serif;font-size:16px;font-weight:700;margin-top:4px;">—</div></div>
+                    </div>
+                </div>
+
+                <!-- KPIs Documentos -->
+                <div class="kpi-grid" style="margin-bottom:20px;">
+                    <div class="kpi-card"><div class="kpi-label">📄 Docs Processados</div><div class="kpi-value" id="doc-kpi-total">0</div><div style="font-size:12px;color:var(--text-muted);margin-top:6px;">Este mês</div></div>
+                    <div class="kpi-card"><div class="kpi-label">🧾 NFs Encontradas</div><div class="kpi-value" id="doc-kpi-nfs" style="color:var(--ocean-400);">0</div><div style="font-size:12px;color:var(--text-muted);margin-top:6px;">NFS-e de serviço</div></div>
+                    <div class="kpi-card"><div class="kpi-label">💰 Total NFs (R$)</div><div class="kpi-value" id="doc-kpi-valor" style="color:var(--coral);">—</div><div style="font-size:12px;color:var(--text-muted);margin-top:6px;">Despesas do mês</div></div>
+                    <div class="kpi-card"><div class="kpi-label">📅 Último Scan</div><div class="kpi-value" id="doc-kpi-scan" style="font-size:18px;">—</div><div style="font-size:12px;color:var(--text-muted);margin-top:6px;">Organizador n8n</div></div>
+                </div>
+
+                <!-- Filtros -->
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div style="display:flex;gap:4px;">
+                        <button class="doc-tipo-btn active" data-tipo="todos" style="background:var(--ocean-600);border:1px solid var(--border);color:#fff;padding:6px 12px;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;">Todos</button>
+                        <button class="doc-tipo-btn" data-tipo="nf_servico" style="background:var(--bg-hover);border:1px solid var(--border);color:var(--text-secondary);padding:6px 12px;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;">NFs</button>
+                        <button class="doc-tipo-btn" data-tipo="recibo" style="background:var(--bg-hover);border:1px solid var(--border);color:var(--text-secondary);padding:6px 12px;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;">Recibos</button>
+                        <button class="doc-tipo-btn" data-tipo="boleto" style="background:var(--bg-hover);border:1px solid var(--border);color:var(--text-secondary);padding:6px 12px;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;">Boletos</button>
+                        <button class="doc-tipo-btn" data-tipo="das" style="background:var(--bg-hover);border:1px solid var(--border);color:var(--text-secondary);padding:6px 12px;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;">DAS</button>
+                    </div>
+                    <button id="doc-refresh" style="margin-left:auto;background:var(--ocean-600);border:none;color:#fff;padding:6px 14px;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;">&#8635; Atualizar</button>
+                </div>
+
+                <!-- Tabela Documentos -->
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+                    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                        <h3 style="font-family:Outfit,sans-serif;font-size:15px;font-weight:600;">Documentos Encontrados</h3>
+                        <span id="doc-table-count" style="font-size:12px;color:var(--text-muted);"></span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                            <thead><tr style="background:var(--bg-secondary);"><th class="fth">Tipo</th><th class="fth">Nº Doc</th><th class="fth">Emitente</th><th class="fth">Descrição</th><th class="fth">Data</th><th class="fth" style="text-align:right;">Valor</th><th class="fth">Remetente</th><th class="fth">Arquivo</th><th class="fth" style="text-align:center;">Drive</th></tr></thead>
+                            <tbody id="doc-table-body"><tr><td colspan="9" style="padding:40px;text-align:center;color:var(--text-muted);">Carregando documentos...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Histórico Envios Contador -->
+                <div style="margin-top:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+                    <div style="padding:16px 20px;border-bottom:1px solid var(--border);"><h3 style="font-family:Outfit,sans-serif;font-size:15px;font-weight:600;">📧 Histórico de Envios ao Contador</h3></div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                            <thead><tr style="background:var(--bg-secondary);"><th class="fth">Mês Ref</th><th class="fth">Enviado Em</th><th class="fth" style="text-align:right;">Airbnb</th><th class="fth" style="text-align:right;">Booking</th><th class="fth" style="text-align:right;">NFs Adélia</th><th class="fth" style="text-align:right;">Total DAS</th><th class="fth" style="text-align:center;">Limpeza</th><th class="fth" style="text-align:center;">Lavagem</th></tr></thead>
+                            <tbody id="doc-envios-body"><tr><td colspan="8" style="padding:30px;text-align:center;color:var(--text-muted);">Nenhum envio registrado.<br><span style="font-size:11px;">O primeiro envio será no penúltimo dia útil do mês.</span></td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div><!-- /tab-documentos -->
+
         </div>
 
         <div class="page-section" id="page-mensagens">
@@ -1683,6 +1762,107 @@ document.getElementById('btn-refresh').addEventListener('click', () => {
     if(fl)fl.addEventListener('click',()=>{if(!allData.length)fetchData();});
     const obs=new MutationObserver(()=>{const el=document.getElementById('page-financeiro');if(el&&el.classList.contains('active')&&!allData.length)fetchData();});
     obs.observe(document.getElementById('page-financeiro'),{attributes:true,attributeFilter:['class']});
+})();
+</script>
+
+<script>
+// ─── Financeiro Tab Navigation ───
+document.querySelectorAll('.fin-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.fin-tab').forEach(t => { t.classList.remove('active'); t.style.color='var(--text-muted)'; t.style.borderBottomColor='transparent'; });
+        tab.classList.add('active'); tab.style.color='var(--ocean-400)'; tab.style.borderBottomColor='var(--ocean-500)';
+        document.querySelectorAll('.fin-tab-content').forEach(c => c.style.display='none');
+        const t=document.getElementById('tab-'+tab.dataset.tab); if(t) t.style.display='block';
+        if(tab.dataset.tab==='documentos' && !window._docsLoaded) window._fetchDocs();
+    });
+});
+</script>
+
+<script>
+// ─── Documentos & NFs Module ───
+(function(){
+    const SB_URL='https://zoqrmshnysdfxhcoulql.supabase.co';
+    const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcXJtc2hueXNkZnhoY291bHFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMDQyMjMsImV4cCI6MjA4ODU4MDIyM30.NQqvqxEEb3sz3Qx7RT_CGloFcvwhWuWI3NCsgZ-ZHFY';
+    const H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+    const fmt=v=>v!=null?'R$ '+parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+    const fmtD=d=>d?d.split('-').reverse().join('/'):'—';
+    let allDocs=[],allEnvios=[];
+    window._docsLoaded=false;
+
+    function getEmailDayInfo(){
+        const h=new Date(),a=h.getFullYear(),m=h.getMonth();
+        const iu=d=>{const w=d.getDay();return w>=1&&w<=5;};
+        let ud=new Date(a,m+1,0); while(!iu(ud)) ud.setDate(ud.getDate()-1);
+        let pu=new Date(ud); pu.setDate(pu.getDate()-1); while(!iu(pu)) pu.setDate(pu.getDate()-1);
+        const mr=new Date(a,m-1,1);
+        const ms=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        return{hoje:h,isEmailDay:h.getDate()===pu.getDate(),penultimoDiaUtil:pu,mesRef:mr,mesRefStr:mr.toISOString().split('T')[0],mesRefNome:ms[mr.getMonth()]+'/'+mr.getFullYear(),diaEnvioStr:pu.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'})};
+    }
+
+    window._fetchDocs=async function(){
+        try{
+            const ma=new Date(),ini=new Date(ma.getFullYear(),ma.getMonth(),1).toISOString().split('T')[0];
+            const r1=await fetch(SB_URL+'/rest/v1/documentos_processados?empresa=eq.Stay Arraial&created_at=gte.'+ini+'&order=created_at.desc',{headers:H});
+            allDocs=r1.ok?await r1.json():[];
+            const r2=await fetch(SB_URL+'/rest/v1/email_envios_contador?empresa=eq.Stay Arraial&order=mes_referencia.desc&limit=12',{headers:H});
+            allEnvios=r2.ok?await r2.json():[];
+            window._docsLoaded=true;
+            renderEmailStatus();renderDocKPIs();renderDocTable();renderEnviosTable();
+        }catch(e){document.getElementById('doc-table-body').innerHTML='<tr><td colspan="9" style="padding:40px;text-align:center;color:var(--red);">Erro: '+e.message+'</td></tr>';}
+    };
+
+    function renderEmailStatus(){
+        const i=getEmailDayInfo(),e=allEnvios.find(x=>x.mes_referencia===i.mesRefStr);
+        document.getElementById('doc-email-mes-ref').textContent='Referência: '+i.mesRefNome;
+        document.getElementById('doc-email-dia').textContent=i.diaEnvioStr;
+        const b=document.getElementById('doc-email-badge');
+        if(e){
+            document.getElementById('doc-email-enviado').innerHTML='<span style="color:var(--green);">✓ Enviado</span>';
+            b.textContent='✓ Email Enviado';b.style.background='rgba(63,185,80,.15)';b.style.color='var(--green)';
+            document.getElementById('doc-email-limpeza').innerHTML=e.incluiu_nfs_limpeza?'<span style="color:var(--green);">✓ Incluída</span>':'<span style="color:var(--red);">✗ Não incluída</span>';
+            document.getElementById('doc-email-lavagem').innerHTML=e.incluiu_nfs_lavagem?'<span style="color:var(--green);">✓ Incluída</span>':'<span style="color:var(--red);">✗ Não incluída</span>';
+        }else if(i.isEmailDay){
+            document.getElementById('doc-email-enviado').innerHTML='<span style="color:var(--yellow);">⏳ Hoje é dia!</span>';
+            b.textContent='⚡ HOJE É DIA DE ENVIO';b.style.background='rgba(210,153,34,.2)';b.style.color='var(--yellow)';
+            document.getElementById('doc-email-limpeza').innerHTML='<span style="color:var(--text-muted);">Aguardando</span>';
+            document.getElementById('doc-email-lavagem').innerHTML='<span style="color:var(--text-muted);">Aguardando</span>';
+        }else{
+            const df=Math.ceil((i.penultimoDiaUtil-i.hoje)/86400000);
+            document.getElementById('doc-email-enviado').innerHTML='<span style="color:var(--text-muted);">Faltam '+df+' dias</span>';
+            b.textContent='📅 '+df+' dias pro envio';b.style.background='rgba(14,165,233,.1)';b.style.color='var(--ocean-400)';
+            document.getElementById('doc-email-limpeza').innerHTML='<span style="color:var(--text-muted);">—</span>';
+            document.getElementById('doc-email-lavagem').innerHTML='<span style="color:var(--text-muted);">—</span>';
+        }
+    }
+    function renderDocKPIs(){
+        const nfs=allDocs.filter(d=>d.tipo==='nf_servico'||d.tipo==='nf_produto');
+        const tv=allDocs.reduce((s,d)=>s+parseFloat(d.valor||0),0);
+        const ls=allDocs.length>0?new Date(allDocs[0].created_at).toLocaleDateString('pt-BR'):'—';
+        document.getElementById('doc-kpi-total').textContent=allDocs.length;
+        document.getElementById('doc-kpi-nfs').textContent=nfs.length;
+        document.getElementById('doc-kpi-valor').textContent=tv>0?fmt(tv):'—';
+        document.getElementById('doc-kpi-scan').textContent=ls;
+    }
+    function renderDocTable(){
+        const tf=document.querySelector('.doc-tipo-btn.active')?.dataset.tipo||'todos';
+        const fd=tf==='todos'?allDocs:allDocs.filter(d=>d.tipo===tf);
+        const tb=document.getElementById('doc-table-body');
+        document.getElementById('doc-table-count').textContent=fd.length+' documentos';
+        if(!fd.length){tb.innerHTML='<tr><td colspan="9" style="padding:40px;text-align:center;color:var(--text-muted);">Nenhum documento encontrado.<br><span style="font-size:11px;">O organizador automático roda diariamente às 09h.</span></td></tr>';return;}
+        const tl={'nf_servico':{l:'NFS-e',c:'#0EA5E9'},'nf_produto':{l:'NF-e',c:'#38BDF8'},'recibo':{l:'Recibo',c:'#3FB950'},'cupom_fiscal':{l:'Cupom',c:'#D29922'},'boleto':{l:'Boleto',c:'#F85149'},'invoice':{l:'Invoice',c:'#A371F7'},'comprovante_pix':{l:'Pix',c:'#3FB950'},'das':{l:'DAS',c:'#F97316'},'outro':{l:'Doc',c:'#8b949e'}};
+        const rs='padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;';
+        tb.innerHTML=fd.map(d=>{const t=tl[d.tipo]||tl['outro'];return'<tr style="transition:background .1s;" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'"><td style="'+rs+'"><span style="background:'+t.c+';color:#fff;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;">'+t.l+'</span></td><td style="'+rs+'font-weight:600;color:var(--ocean-400);">'+(d.numero_documento||'—')+'</td><td style="'+rs+'">'+(d.emitente||'—')+'</td><td style="'+rs+'max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="'+(d.arquivo_nome_padronizado||'')+'">'+(d.arquivo_nome_padronizado||d.arquivo_nome||'—')+'</td><td style="'+rs+'">'+fmtD(d.data_documento)+'</td><td style="'+rs+'text-align:right;font-weight:600;">'+(d.valor>0?fmt(d.valor):'—')+'</td><td style="'+rs+'color:var(--text-secondary);font-size:11px;">'+(d.remetente_email||'—')+'</td><td style="'+rs+'font-size:11px;color:var(--text-muted);max-width:150px;overflow:hidden;text-overflow:ellipsis;" title="'+(d.arquivo_nome||'')+'">'+(d.arquivo_nome||'—')+'</td><td style="'+rs+'text-align:center;">'+(d.drive_path?'<span style="color:var(--green);font-size:14px;">📁</span>':'<span style="color:var(--text-muted);">—</span>')+'</td></tr>';}).join('');
+    }
+    function renderEnviosTable(){
+        const tb=document.getElementById('doc-envios-body');
+        if(!allEnvios.length) return;
+        const ms=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        const rs='padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;';
+        const ck=v=>v?'<span style="color:var(--green);font-size:16px;">✓</span>':'<span style="color:var(--red);font-size:16px;">✗</span>';
+        tb.innerHTML=allEnvios.map(e=>{const[a,m]=(e.mes_referencia||'').split('-');const mn=ms[parseInt(m)]+'/'+a;const de=e.enviado_em?new Date(e.enviado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';return'<tr style="transition:background .1s;" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'"><td style="'+rs+'font-weight:600;">'+mn+'</td><td style="'+rs+'color:var(--text-secondary);">'+de+'</td><td style="'+rs+'text-align:right;">'+fmt(e.airbnb_liquido)+'</td><td style="'+rs+'text-align:right;">'+fmt(e.booking_liquido)+'</td><td style="'+rs+'text-align:right;color:var(--coral);">'+(e.total_nfs_adelia?'− '+fmt(e.total_nfs_adelia):'—')+'</td><td style="'+rs+'text-align:right;font-weight:700;color:var(--green);">'+fmt(e.total_das)+'</td><td style="'+rs+'text-align:center;">'+ck(e.incluiu_nfs_limpeza)+'</td><td style="'+rs+'text-align:center;">'+ck(e.incluiu_nfs_lavagem)+'</td></tr>';}).join('');
+    }
+    document.querySelectorAll('.doc-tipo-btn').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.doc-tipo-btn').forEach(x=>{x.classList.remove('active');x.style.background='var(--bg-hover)';x.style.color='var(--text-secondary)';});b.classList.add('active');b.style.background='var(--ocean-600)';b.style.color='#fff';renderDocTable();});});
+    document.getElementById('doc-refresh').addEventListener('click',window._fetchDocs);
 })();
 </script>
 
