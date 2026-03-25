@@ -1664,15 +1664,15 @@ document.getElementById('btn-refresh').addEventListener('click', () => {
 
 // ─── Financeiro — Conciliação ───
 (function() {
-    const SB_URL = 'https://zoqrmshnysdfxhcoulql.supabase.co';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcXJtc2hueXNkZnhoY291bHFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMDQyMjMsImV4cCI6MjA4ODU4MDIyM30.NQqvqxEEb3sz3Qx7RT_CGloFcvwhWuWI3NCsgZ-ZHFY';
+    const API_URL = 'https://zoqrmshnysdfxhcoulql.supabase.co/functions/v1/dashboard-data-api';
+    const DASH_KEY = 'stay_dash_9O0D372cjMlr0vZAf6PBb2sa55gZ4ffUeOIZTVmC';
     let allData=[], filteredData=[];
     const fmt=v=>v!=null?'R$ '+parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
     const fmtD=d=>d?d.split('-').reverse().join('/'):'—';
 
     async function fetchData(){
         try{
-            const r=await fetch(SB_URL+'/rest/v1/conciliacao_reservas?select=*&order=checkin.desc',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+            const r=await fetch(API_URL+'?endpoint=conciliacao',{headers:{'x-dashboard-key':DASH_KEY}});
             if(!r.ok)throw new Error('HTTP '+r.status);
             allData=await r.json();
             applyFilters();
@@ -1781,9 +1781,9 @@ document.querySelectorAll('.fin-tab').forEach(tab => {
 <script>
 // ─── Documentos & NFs Module ───
 (function(){
-    const SB_URL='https://zoqrmshnysdfxhcoulql.supabase.co';
-    const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcXJtc2hueXNkZnhoY291bHFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMDQyMjMsImV4cCI6MjA4ODU4MDIyM30.NQqvqxEEb3sz3Qx7RT_CGloFcvwhWuWI3NCsgZ-ZHFY';
-    const H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+    const API_URL='https://zoqrmshnysdfxhcoulql.supabase.co/functions/v1/dashboard-data-api';
+    const DASH_KEY='stay_dash_9O0D372cjMlr0vZAf6PBb2sa55gZ4ffUeOIZTVmC';
+    const H={'x-dashboard-key':DASH_KEY};
     const fmt=v=>v!=null?'R$ '+parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
     const fmtD=d=>d?d.split('-').reverse().join('/'):'—';
     let allDocs=[],allEnvios=[];
@@ -1802,9 +1802,9 @@ document.querySelectorAll('.fin-tab').forEach(tab => {
     window._fetchDocs=async function(){
         try{
             const ma=new Date(),ini=new Date(ma.getFullYear(),ma.getMonth(),1).toISOString().split('T')[0];
-            const r1=await fetch(SB_URL+'/rest/v1/documentos_processados?empresa=eq.Stay Arraial&created_at=gte.'+ini+'&order=created_at.desc',{headers:H});
+            const r1=await fetch(API_URL+'?endpoint=documentos&mes_inicio='+ini,{headers:H});
             allDocs=r1.ok?await r1.json():[];
-            const r2=await fetch(SB_URL+'/rest/v1/email_envios_contador?empresa=eq.Stay Arraial&order=mes_referencia.desc&limit=12',{headers:H});
+            const r2=await fetch(API_URL+'?endpoint=envios',{headers:H});
             allEnvios=r2.ok?await r2.json():[];
             window._docsLoaded=true;
             renderEmailStatus();renderDocKPIs();renderDocTable();renderEnviosTable();
