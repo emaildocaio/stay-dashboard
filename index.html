@@ -808,23 +808,23 @@
             <div class="kpi-grid">
                 <div class="kpi-card">
                     <div class="kpi-label">&#128176; Receita do Mês</div>
-                    <div class="kpi-value">R$ 18.450</div>
-                    <div class="kpi-change up">&#9650; 12% vs mês anterior</div>
+                    <div class="kpi-value" id="home-kpi-receita">—</div>
+                    <div class="kpi-change" id="home-kpi-receita-sub">Carregando...</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">&#128197; Reservas Ativas</div>
-                    <div class="kpi-value">14</div>
-                    <div class="kpi-change up">&#9650; 3 novas esta semana</div>
+                    <div class="kpi-value" id="home-kpi-reservas">—</div>
+                    <div class="kpi-change" id="home-kpi-reservas-sub">Carregando...</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">&#127968; Taxa de Ocupação</div>
-                    <div class="kpi-value">72%</div>
-                    <div class="kpi-change neutral">&#9644; Meta: 80%</div>
+                    <div class="kpi-value" id="home-kpi-ocupacao">—</div>
+                    <div class="kpi-change" id="home-kpi-ocupacao-sub">Carregando...</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">&#129302; Custo IA (mês)</div>
-                    <div class="kpi-value">R$ 47,30</div>
-                    <div class="kpi-change down">&#9660; Orçamento: R$ 80</div>
+                    <div class="kpi-value" id="home-kpi-custo">—</div>
+                    <div class="kpi-change" id="home-kpi-custo-sub">Carregando...</div>
                 </div>
             </div>
 
@@ -850,7 +850,7 @@
             <div class="section-header">
                 <span class="section-icon">&#127968;</span> Ocupação por Apartamento — Março 2026
             </div>
-            <div class="occupancy-grid">
+            <div class="occupancy-grid" id="home-occupancy-grid">
                 <div class="occupancy-card">
                     <div class="apt-name">Apt 1 — Praia</div>
                     <div class="occupancy-ring">
@@ -957,7 +957,7 @@
                         Últimas Reservas
                         <a class="view-all" data-page="reservas">Ver todas &#8594;</a>
                     </h3>
-                    <ul class="reservations-list">
+                    <ul class="reservations-list" id="home-reservations-list">
                         <li>
                             <div class="reservation-info">
                                 <div class="reservation-platform platform-airbnb">A</div>
@@ -1018,7 +1018,7 @@
                         Ações Pendentes
                         <span style="font-size:12px; font-weight:500; color:var(--red);">4 itens</span>
                     </h3>
-                    <ul class="pending-list">
+                    <ul class="pending-list" id="home-pending-list">
                         <li class="pending-item">
                             <div class="pending-icon urgent">!</div>
                             <div class="pending-text">
@@ -1059,7 +1059,7 @@
             <div class="section-header">
                 <span class="section-icon">&#129302;</span> Status dos Agentes de IA
             </div>
-            <div class="agents-grid">
+            <div class="agents-grid" id="home-agents-grid">
                 <div class="agent-card">
                     <div class="agent-header">
                         <div class="agent-name">
@@ -1099,7 +1099,7 @@
             <div class="section-header">
                 <span class="section-icon">&#128200;</span> Funil Comercial — Março 2026
             </div>
-            <div class="funnel-row">
+            <div class="funnel-row" id="home-funnel-row">
                 <div class="funnel-step">
                     <div class="funnel-num">156</div>
                     <div class="funnel-label">Mensagens Recebidas</div>
@@ -1440,11 +1440,14 @@
 </div><!-- /main -->
 
 <script>
+// ─── CONFIG ───
+const HOME_API = 'https://zoqrmshnysdfxhcoulql.supabase.co/functions/v1/dashboard-data-api';
+const HOME_KEY = 'stay_dash_9O0D372cjMlr0vZAf6PBb2sa55gZ4ffUeOIZTVmC';
+const H = {'x-dashboard-key': HOME_KEY};
+
 // ─── Date ───
 const dateEl = document.getElementById('current-date');
-const now = new Date();
-const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-dateEl.textContent = now.toLocaleDateString('pt-BR', options);
+dateEl.textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
 // ─── Period Toggle ───
 document.querySelectorAll('.period-toggle button').forEach(btn => {
@@ -1460,204 +1463,280 @@ document.querySelectorAll('.sidebar-nav a, .quick-action[data-page], .view-all[d
         e.preventDefault();
         const page = link.getAttribute('data-page');
         if (!page) return;
-
-        // Update sidebar active state
         document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
         const sidebarLink = document.querySelector(`.sidebar-nav a[data-page="${page}"]`);
         if (sidebarLink) sidebarLink.classList.add('active');
-
-        // Show page
         document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
         const target = document.getElementById('page-' + page);
         if (target) target.classList.add('active');
     });
 });
 
+// ─── Helpers ───
+const fmtBRL = v => v != null ? 'R$ ' + parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '—';
+const fmtDate = d => d ? d.split('-').reverse().join('/') : '—';
+const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const labelMonth = m => { const [,mo] = m.split('-'); return monthNames[parseInt(mo)-1]; };
+
+async function api(endpoint) {
+    const r = await fetch(HOME_API + '?endpoint=' + endpoint, {headers: H});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+}
+
 // ─── Chart.js Global Config ───
 Chart.defaults.color = '#8b949e';
 Chart.defaults.borderColor = '#30363d';
 Chart.defaults.font.family = "'Inter', sans-serif";
 
-// ─── Revenue Chart ───
-const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-new Chart(revenueCtx, {
-    type: 'line',
-    data: {
-        labels: ['Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
-        datasets: [{
-            label: 'Receita (R$)',
-            data: [14200, 16800, 12400, 22500, 15300, 11800, 13600, 14900, 28500, 19200, 21000, 18450],
-            borderColor: '#0EA5E9',
-            backgroundColor: 'rgba(14,165,233,0.1)',
-            fill: true,
-            tension: 0.4,
-            pointRadius: 3,
-            pointHoverRadius: 6,
-            borderWidth: 2
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            y: {
-                ticks: {
-                    callback: v => 'R$ ' + (v/1000).toFixed(0) + 'k'
-                },
-                grid: { color: 'rgba(48,54,61,0.5)' }
-            },
-            x: { grid: { display: false } }
-        }
-    }
-});
+// ─── Chart instances (for destroy/recreate) ───
+let chartRevenue, chartBookings, chartCosts, chartOccupancy;
 
-// ─── Bookings Chart ───
-const bookingsCtx = document.getElementById('bookingsChart').getContext('2d');
-new Chart(bookingsCtx, {
-    type: 'bar',
-    data: {
-        labels: ['Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
-        datasets: [
-            {
-                label: 'Airbnb',
-                data: [8, 10, 7, 14, 9, 6, 8, 9, 18, 12, 13, 9],
-                backgroundColor: '#FF5A5F',
-                borderRadius: 4,
-                barPercentage: 0.7
-            },
-            {
-                label: 'Booking',
-                data: [5, 6, 4, 8, 5, 4, 5, 6, 10, 7, 8, 4],
-                backgroundColor: '#003580',
-                borderRadius: 4,
-                barPercentage: 0.7
-            },
-            {
-                label: 'Direto',
-                data: [1, 2, 1, 2, 1, 1, 1, 1, 3, 2, 1, 1],
-                backgroundColor: '#0EA5E9',
-                borderRadius: 4,
-                barPercentage: 0.7
+// ═══════════ LOAD KPIs ═══════════
+async function loadKPIs() {
+    try {
+        const d = await api('home_kpis');
+        document.getElementById('home-kpi-receita').textContent = fmtBRL(d.receita);
+        const chg = d.receita_change;
+        const sub1 = document.getElementById('home-kpi-receita-sub');
+        sub1.className = 'kpi-change ' + (chg >= 0 ? 'up' : 'down');
+        sub1.innerHTML = (chg >= 0 ? '&#9650; ' : '&#9660; ') + Math.abs(chg) + '% vs m\u00eas anterior';
+
+        document.getElementById('home-kpi-reservas').textContent = d.reservas_ativas;
+        const sub2 = document.getElementById('home-kpi-reservas-sub');
+        sub2.className = 'kpi-change ' + (d.reservas_novas_semana > 0 ? 'up' : 'neutral');
+        sub2.innerHTML = (d.reservas_novas_semana > 0 ? '&#9650; ' : '&#9644; ') + d.reservas_novas_semana + ' novas esta semana';
+
+        document.getElementById('home-kpi-ocupacao').textContent = d.ocupacao + '%';
+        const sub3 = document.getElementById('home-kpi-ocupacao-sub');
+        sub3.className = 'kpi-change ' + (d.ocupacao >= 80 ? 'up' : 'neutral');
+        sub3.innerHTML = '&#9644; Meta: 80%';
+
+        document.getElementById('home-kpi-custo').textContent = fmtBRL(d.custo_ia_brl);
+        const sub4 = document.getElementById('home-kpi-custo-sub');
+        sub4.className = 'kpi-change ' + (d.custo_ia_brl <= d.custo_ia_orcamento ? 'up' : 'down');
+        sub4.innerHTML = (d.custo_ia_brl <= d.custo_ia_orcamento ? '&#9660; ' : '&#9650; ') + 'Or\u00e7amento: R$ ' + d.custo_ia_orcamento;
+    } catch(e) { console.error('KPIs error:', e); }
+}
+
+// ═══════════ LOAD CHARTS ═══════════
+async function loadCharts() {
+    try {
+        const d = await api('home_charts');
+        const labels = d.labels.map(labelMonth);
+
+        // Revenue Chart
+        if (chartRevenue) chartRevenue.destroy();
+        chartRevenue = new Chart(document.getElementById('revenueChart').getContext('2d'), {
+            type: 'line',
+            data: { labels, datasets: [{
+                label: 'Receita (R$)', data: d.revenue,
+                borderColor: '#0EA5E9', backgroundColor: 'rgba(14,165,233,0.1)',
+                fill: true, tension: 0.4, pointRadius: 3, pointHoverRadius: 6, borderWidth: 2
+            }]},
+            options: { responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { ticks: { callback: v => 'R$ ' + (v/1000).toFixed(0) + 'k' }, grid: { color: 'rgba(48,54,61,0.5)' } }, x: { grid: { display: false } } }
             }
-        ]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: { boxWidth: 12, padding: 16, font: { size: 11 } }
+        });
+
+        // Bookings Chart
+        if (chartBookings) chartBookings.destroy();
+        chartBookings = new Chart(document.getElementById('bookingsChart').getContext('2d'), {
+            type: 'bar',
+            data: { labels, datasets: [
+                { label: 'Airbnb', data: d.bookings.airbnb, backgroundColor: '#FF5A5F', borderRadius: 4, barPercentage: 0.7 },
+                { label: 'Booking', data: d.bookings.booking, backgroundColor: '#003580', borderRadius: 4, barPercentage: 0.7 },
+                { label: 'Direto', data: d.bookings.direto, backgroundColor: '#0EA5E9', borderRadius: 4, barPercentage: 0.7 },
+            ]},
+            options: { responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16, font: { size: 11 } } } },
+                scales: { y: { stacked: true, grid: { color: 'rgba(48,54,61,0.5)' } }, x: { stacked: true, grid: { display: false } } }
             }
-        },
-        scales: {
-            y: {
-                stacked: true,
-                grid: { color: 'rgba(48,54,61,0.5)' }
-            },
-            x: {
-                stacked: true,
-                grid: { display: false }
+        });
+
+        // AI Costs Doughnut
+        const agents = Object.entries(d.costs_by_agent).sort((a,b) => b[1]-a[1]);
+        const costLabels = agents.map(a => a[0]);
+        const costValues = agents.map(a => Math.round(a[1]*100)/100);
+        const costColors = ['#0EA5E9','#F97316','#3FB950','#A371F7','#D29922','#8b949e'];
+        if (chartCosts) chartCosts.destroy();
+        chartCosts = new Chart(document.getElementById('costsChart').getContext('2d'), {
+            type: 'doughnut',
+            data: { labels: costLabels, datasets: [{ data: costValues, backgroundColor: costColors.slice(0, costLabels.length), borderColor: '#1c2128', borderWidth: 3 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '65%',
+                plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 12, font: { size: 11 },
+                    generateLabels: function(chart) { const dt = chart.data; return dt.labels.map((l,i) => ({ text: l + ': R$ ' + dt.datasets[0].data[i].toFixed(2), fillStyle: dt.datasets[0].backgroundColor[i], strokeStyle: dt.datasets[0].backgroundColor[i], lineWidth: 0, index: i })); }
+                } } }
+            }
+        });
+
+        // Occupancy line chart
+        if (chartOccupancy) chartOccupancy.destroy();
+        chartOccupancy = new Chart(document.getElementById('occupancyChart').getContext('2d'), {
+            type: 'line',
+            data: { labels, datasets: [
+                { label: 'Ocupa\u00e7\u00e3o (%)', data: d.occupancy_pct, borderColor: '#F97316', backgroundColor: 'rgba(249,115,22,0.1)', fill: true, tension: 0.4, pointRadius: 3, pointHoverRadius: 6, borderWidth: 2 },
+                { label: 'Meta', data: Array(12).fill(80), borderColor: 'rgba(139,148,158,0.4)', borderDash: [6,4], borderWidth: 1, pointRadius: 0, fill: false }
+            ]},
+            options: { responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16, font: { size: 11 } } } },
+                scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: 'rgba(48,54,61,0.5)' } }, x: { grid: { display: false } } }
+            }
+        });
+    } catch(e) { console.error('Charts error:', e); }
+}
+
+// ═══════════ LOAD OCCUPANCY PER APARTMENT ═══════════
+async function loadOccupancy() {
+    try {
+        const data = await api('home_occupancy');
+        const grid = document.getElementById('home-occupancy-grid');
+        const aptNames = ['Praia','Forno','Pontal','Prainha','Anjos'];
+        grid.innerHTML = data.map((apt, i) => {
+            const pct = apt.pct;
+            const circumference = 213.6;
+            const offset = circumference - (circumference * pct / 100);
+            const color = pct >= 75 ? 'var(--green)' : pct >= 50 ? 'var(--ocean-400)' : 'var(--yellow)';
+            return `<div class="occupancy-card">
+                <div class="apt-name">Apt ${i+1} \u2014 ${aptNames[i] || apt.name}</div>
+                <div class="occupancy-ring">
+                    <svg width="80" height="80" viewBox="0 0 80 80">
+                        <circle class="ring-bg" cx="40" cy="40" r="34"/>
+                        <circle class="ring-fill" cx="40" cy="40" r="34" stroke="${color}" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
+                    </svg>
+                    <span class="ring-text" style="color:${color}">${pct}%</span>
+                </div>
+                <div class="apt-status">${apt.nights} noites ocupadas</div>
+            </div>`;
+        }).join('');
+    } catch(e) { console.error('Occupancy error:', e); }
+}
+
+// ═══════════ LOAD LAST RESERVATIONS ═══════════
+async function loadReservations() {
+    try {
+        const data = await api('home_reservations');
+        const list = document.getElementById('home-reservations-list');
+        list.innerHTML = data.map(r => {
+            const partner = (r.partner_name || '').toLowerCase();
+            let platClass = 'platform-direct', platLetter = 'S';
+            if (partner.includes('airbnb')) { platClass = 'platform-airbnb'; platLetter = 'A'; }
+            else if (partner.includes('booking')) { platClass = 'platform-booking'; platLetter = 'B'; }
+            const statusMap = { confirmed: ['Confirmada','status-confirmed'], checkin_today: ['Check-in hoje','status-checkin'], in_house: ['Hospedado','status-checkin'], completed: ['Finalizada','status-pending'] };
+            const [statusText, statusClass] = statusMap[r.status] || ['Confirmada','status-confirmed'];
+            return `<li>
+                <div class="reservation-info">
+                    <div class="reservation-platform ${platClass}">${platLetter}</div>
+                    <div class="reservation-details">
+                        <div class="guest-name">${r.guest_name}</div>
+                        <div class="reservation-meta">${r.apt} \u2014 ${fmtDate(r.check_in_date)} a ${fmtDate(r.check_out_date)} &middot; <span class="status-tag ${statusClass}">${statusText}</span></div>
+                    </div>
+                </div>
+                <div class="reservation-amount">
+                    <div class="amount">${fmtBRL(r.total_price)}</div>
+                    <div class="date">${r.duration_days} noites</div>
+                </div>
+            </li>`;
+        }).join('');
+    } catch(e) { console.error('Reservations error:', e); }
+}
+
+// ═══════════ LOAD PENDING ACTIONS ═══════════
+async function loadPending() {
+    try {
+        const d = await api('home_pending');
+        const list = document.getElementById('home-pending-list');
+        const items = [];
+
+        if (d.passwords_pending.length > 0) {
+            for (const p of d.passwords_pending) {
+                items.push(`<li class="pending-item"><div class="pending-icon urgent">!</div><div class="pending-text"><div class="pending-title">Definir senha \u2014 ${p.unit}</div><div class="pending-meta">${p.guest}</div></div><button class="pending-action-btn">Definir</button></li>`);
             }
         }
-    }
-});
-
-// ─── AI Costs Chart ───
-const costsCtx = document.getElementById('costsChart').getContext('2d');
-new Chart(costsCtx, {
-    type: 'doughnut',
-    data: {
-        labels: ['Auto-Responder', 'Comercial', 'Auto-Sync', 'Chat RAG', 'Outros'],
-        datasets: [{
-            data: [18.5, 12.3, 7.2, 6.1, 3.2],
-            backgroundColor: ['#0EA5E9', '#F97316', '#3FB950', '#A371F7', '#8b949e'],
-            borderColor: '#1c2128',
-            borderWidth: 3
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'right',
-                labels: {
-                    boxWidth: 12,
-                    padding: 12,
-                    font: { size: 11 },
-                    generateLabels: function(chart) {
-                        const data = chart.data;
-                        return data.labels.map((label, i) => ({
-                            text: `${label}: R$ ${data.datasets[0].data[i].toFixed(2)}`,
-                            fillStyle: data.datasets[0].backgroundColor[i],
-                            strokeStyle: data.datasets[0].backgroundColor[i],
-                            lineWidth: 0,
-                            index: i
-                        }));
-                    }
-                }
-            }
-        },
-        cutout: '65%'
-    }
-});
-
-// ─── Occupancy Chart ───
-const occCtx = document.getElementById('occupancyChart').getContext('2d');
-new Chart(occCtx, {
-    type: 'line',
-    data: {
-        labels: ['Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
-        datasets: [{
-            label: 'Ocupação (%)',
-            data: [65, 70, 55, 85, 60, 50, 58, 62, 95, 78, 75, 72],
-            borderColor: '#F97316',
-            backgroundColor: 'rgba(249,115,22,0.1)',
-            fill: true,
-            tension: 0.4,
-            pointRadius: 3,
-            pointHoverRadius: 6,
-            borderWidth: 2
-        }, {
-            label: 'Meta',
-            data: [80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80],
-            borderColor: 'rgba(139,148,158,0.4)',
-            borderDash: [6, 4],
-            borderWidth: 1,
-            pointRadius: 0,
-            fill: false
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: { boxWidth: 12, padding: 16, font: { size: 11 } }
-            }
-        },
-        scales: {
-            y: {
-                min: 0,
-                max: 100,
-                ticks: { callback: v => v + '%' },
-                grid: { color: 'rgba(48,54,61,0.5)' }
-            },
-            x: { grid: { display: false } }
+        if (d.shadow_pending > 0) {
+            items.push(`<li class="pending-item"><div class="pending-icon warning">&#9888;</div><div class="pending-text"><div class="pending-title">${d.shadow_pending} shadow reviews pendentes</div><div class="pending-meta">Respostas do agente para revisar</div></div><button class="pending-action-btn" onclick="document.querySelector('[data-page=shadow]').click()">Revisar</button></li>`);
         }
-    }
-});
+        if (d.leads_active > 0) {
+            const profiles = Object.entries(d.leads_profiles).map(([k,v]) => k + ' (' + v + ')').join(', ');
+            items.push(`<li class="pending-item"><div class="pending-icon info">&#9993;</div><div class="pending-text"><div class="pending-title">${d.leads_active} leads ativos</div><div class="pending-meta">Perfil: ${profiles}</div></div><button class="pending-action-btn" onclick="document.querySelector('[data-page=comercial]').click()">Ver</button></li>`);
+        }
+        for (const c of d.checkouts_tomorrow) {
+            items.push(`<li class="pending-item"><div class="pending-icon warning">&#9888;</div><div class="pending-text"><div class="pending-title">Checkout amanh\u00e3 \u2014 ${c.guest}</div><div class="pending-meta">${fmtDate(c.date)}</div></div><button class="pending-action-btn">Mensagem</button></li>`);
+        }
+
+        list.innerHTML = items.length ? items.join('') : '<li class="pending-item"><div class="pending-text"><div class="pending-title" style="color:var(--green)">Nenhuma a\u00e7\u00e3o pendente</div></div></li>';
+
+        // Update sidebar badge
+        const totalPending = d.shadow_pending + d.leads_active + d.passwords_pending.length + d.checkouts_tomorrow.length;
+        const msgBadge = document.querySelector('[data-page="mensagens"] .badge');
+        if (msgBadge) msgBadge.textContent = d.passwords_pending.length || '';
+        const shadowBadge = document.querySelector('[data-page="shadow"] .badge');
+        if (shadowBadge) shadowBadge.textContent = d.shadow_pending || '';
+    } catch(e) { console.error('Pending error:', e); }
+}
+
+// ═══════════ LOAD AGENTS STATUS ═══════════
+async function loadAgents() {
+    try {
+        const d = await api('home_agents');
+        const grid = document.getElementById('home-agents-grid');
+        const a = d.auto_responder, c = d.commercial, s = d.auto_sync;
+        grid.innerHTML = `
+            <div class="agent-card">
+                <div class="agent-header"><div class="agent-name"><span class="agent-status-dot dot-active"></span>agent-auto-responder</div></div>
+                <div class="agent-stat"><span>Respostas hoje</span><span class="val">${a.responses_today}</span></div>
+                <div class="agent-stat"><span>Taxa aprova\u00e7\u00e3o</span><span class="val" style="color:var(--green)">${a.approval_rate}%</span></div>
+                <div class="agent-stat"><span>Custo 24h</span><span class="val">${fmtBRL(a.cost_24h)}</span></div>
+            </div>
+            <div class="agent-card">
+                <div class="agent-header"><div class="agent-name"><span class="agent-status-dot dot-active"></span>agent-commercial</div></div>
+                <div class="agent-stat"><span>Leads processados</span><span class="val">${c.leads_today}</span></div>
+                <div class="agent-stat"><span>Convers\u00f5es</span><span class="val" style="color:var(--green)">${c.conversions_month}</span></div>
+                <div class="agent-stat"><span>Custo 24h</span><span class="val">${fmtBRL(c.cost_24h)}</span></div>
+            </div>
+            <div class="agent-card">
+                <div class="agent-header"><div class="agent-name"><span class="agent-status-dot dot-active"></span>agent-auto-sync</div></div>
+                <div class="agent-stat"><span>Syncs hoje</span><span class="val">${s.syncs_today}</span></div>
+                <div class="agent-stat"><span>Erros</span><span class="val" style="color:var(--green)">${s.errors}</span></div>
+                <div class="agent-stat"><span>Custo 24h</span><span class="val">${fmtBRL(s.cost_24h)}</span></div>
+            </div>`;
+    } catch(e) { console.error('Agents error:', e); }
+}
+
+// ═══════════ LOAD FUNNEL ═══════════
+async function loadFunnel() {
+    try {
+        const d = await api('home_funnel');
+        const row = document.getElementById('home-funnel-row');
+        row.innerHTML = `
+            <div class="funnel-step"><div class="funnel-num">${d.mensagens}</div><div class="funnel-label">Mensagens Recebidas</div></div>
+            <div class="funnel-arrow">&#8594;</div>
+            <div class="funnel-step"><div class="funnel-num">${d.leads}</div><div class="funnel-label">Leads Qualificados</div></div>
+            <div class="funnel-arrow">&#8594;</div>
+            <div class="funnel-step"><div class="funnel-num">${d.propostas}</div><div class="funnel-label">Propostas Enviadas</div></div>
+            <div class="funnel-arrow">&#8594;</div>
+            <div class="funnel-step"><div class="funnel-num" style="color:var(--green)">${d.reservas}</div><div class="funnel-label">Reservas Confirmadas</div></div>`;
+    } catch(e) { console.error('Funnel error:', e); }
+}
+
+// ═══════════ LOAD ALL HOME DATA ═══════════
+async function loadHome() {
+    await Promise.all([loadKPIs(), loadCharts(), loadOccupancy(), loadReservations(), loadPending(), loadAgents(), loadFunnel()]);
+}
 
 // ─── Refresh button ───
-document.getElementById('btn-refresh').addEventListener('click', () => {
-    document.getElementById('btn-refresh').innerHTML = '&#8635; Atualizando...';
-    setTimeout(() => {
-        document.getElementById('btn-refresh').innerHTML = '&#8635; Atualizar';
-    }, 1500);
+document.getElementById('btn-refresh').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-refresh');
+    btn.innerHTML = '&#8635; Atualizando...';
+    btn.disabled = true;
+    await loadHome();
+    btn.innerHTML = '&#8635; Atualizar';
+    btn.disabled = false;
 });
+
+// ─── Auto-load on page ready ───
+loadHome();
 </script>
 
 <script>
